@@ -1,12 +1,27 @@
-import React from 'react'
-import Landing from './pages/Landing'
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Landing from './pages/Landing';
+import Dashboard from './pages/Dashboard';
 
-const App = () => {
+// --- THIS IS THE FIX ---
+// 1. Import the creation function and your config
+import { createWeb3Modal } from '@web3modal/wagmi/react'
+import { wagmiConfig, projectId, chains } from './web3config.js'
+
+// 2. Call the function here to create the modal
+createWeb3Modal({ wagmiConfig, projectId, chains })
+// --------------------
+
+function App() {
   return (
-    <div>
-      <Landing/>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
