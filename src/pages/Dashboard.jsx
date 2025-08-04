@@ -1,65 +1,119 @@
-// src/pages/Dashboard.jsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { useAccount } from 'wagmi';
 
-const Dashboard = () => {
+import Header from '../components/dashboard/Header';
+import StatCard from '../components/dashboard/StatCard';
+import PortfolioChart from '../components/dashboard/PortfolioChart';
+import ActionsPanel from '../components/dashboard/ActionsPanel';
+import TransactionTable from '../components/dashboard/TransactionTable';
+import { DashboardSkeleton } from '../components/dashboard/skeletons/DashboardSkeleton';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DollarSign, Wallet, CheckCircle } from 'lucide-react';
+
+// --- MOCK DATA ---
+const mockInvestorData = {
+  kycStatus: 'Approved',
+  stats: {
+    portfolioValueCHF: 6253.75,
+    tokenBalance: 1250.75,
+    kycProgress: 100,
+  },
+  chartData: [
+    { name: 'Jan', value: 3200 }, { name: 'Feb', value: 3100 },
+    { name: 'Mar', value: 4500 }, { name: 'Apr', value: 4200 },
+    { name: 'May', value: 5100 }, { name: 'Jun', value: 5300 },
+    { name: 'Jul', value: 6253.75 },
+  ],
+  transactions: [
+    { id: 'TXN728', type: 'Purchase', amount: '+1,000.00 SPIR', valueCHF: '5,000.00', date: '2025-07-15', status: 'Completed' },
+    { id: 'TXN729', type: 'Purchase', amount: '+250.75 SPIR', valueCHF: '1,253.75', date: '2025-08-01', status: 'Completed' },
+  ],
+};
+
+const gradientBackground = {
+  background: 'linear-gradient(93deg,rgba(10, 10, 10, 1) 0%, rgba(38, 38, 36, 1) 55%, rgba(31, 28, 28, 1) 83%, rgba(43, 40, 40, 1) 100%)'
+};
+
+const DashboardPage = () => {
   const { open } = useWeb3Modal();
   const { address, isConnected } = useAccount();
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // If the user is not connected, show a message and a connect button
+  useEffect(() => {
+    if (isConnected) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setData(mockInvestorData);
+        setIsLoading(false);
+      }, 1500);
+    }
+  }, [isConnected]);
+
   if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-3xl font-bold text-white">Investor Dashboard</h1>
-        <p className="text-gray-400 mt-2">Please connect your wallet to view your assets.</p>
-        <button
-          onClick={() => open()}
-          className="mt-6 bg-brand-gold text-white font-bold py-3 px-6 rounded-md hover:bg-opacity-90 transition-colors"
-        >
-          Connect Wallet
-        </button>
-      </div>
-    );
+    // ... Disconnected state remains the same ...
+  }
+  
+  if (isLoading) {
+      return (
+          <div className="min-h-screen p-4 sm:p-6 md:p-8 font-sans" style={gradientBackground}>
+              <div className="max-w-7xl mx-auto">
+                <Header address={address} />
+                <DashboardSkeleton />
+              </div>
+          </div>
+      );
   }
 
-  // If the user IS connected, show the dashboard
   return (
-    <div className="min-h-screen bg-black p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 font-sans" style={gradientBackground}>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-landing-serif font-bold text-white">Dashboard</h1>
-          {/* This button shows the connected wallet address */}
-          <button
-            onClick={() => open()}
-            className="bg-gray-800 border border-gray-700 text-white font-mono py-2 px-4 rounded-md text-sm"
-          >
-            {`${address.slice(0, 6)}...${address.slice(-4)}`}
-          </button>
-        </header>
+        <Header address={address} />
+        
+        <Tabs defaultValue="overview" className="mt-6">
+          <TabsList className="grid w-full grid-cols-2 sm:w-[400px] bg-black bg-opacity-20 border-gray-700">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <StatCard
+                title="Portfolio Value (CHF)"
+                value={data.stats.portfolioValueCHF.toLocaleString('de-CH')}
+                icon={<DollarSign className="h-4 w-4 text-gray-400" />}
+              />
+              <StatCard
+                title="Tokens Owned (SPIR)"
+                value={data.stats.tokenBalance.toLocaleString()}
+                icon={<Wallet className="h-4 w-4 text-gray-400" />}
+              />
+              <StatCard
+                title="KYC Status"
+                value={data.kycStatus}
+                icon={<CheckCircle className="h-4 w-4 text-gray-400" />}
+              />
+            </div>
+            <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-7">
+                <div className="lg:col-span-4">
+                    <PortfolioChart data={data.chartData} />
+                </div>
+                <div className="lg:col-span-3">
+                    <ActionsPanel />
+                </div>
+            </div>
+          </TabsContent>
 
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* We will add stat cards here */}
-          <div className="rounded-lg bg-[#061325] border border-gray-800 p-6">
-            <h3 className="text-gray-400 text-sm font-bold uppercase">KYC Status</h3>
-            <p className="text-2xl font-bold text-green-400 mt-2">Approved</p>
-          </div>
-          <div className="rounded-lg bg-[#061325] border border-gray-800 p-6">
-            <h3 className="text-gray-400 text-sm font-bold uppercase">Tokens Owned</h3>
-            <p className="text-2xl font-bold text-brand-gold mt-2">1,250.75 SPIR</p>
-          </div>
-          <div className="rounded-lg bg-[#061325] border border-gray-800 p-6">
-            <h3 className="text-gray-400 text-sm font-bold uppercase">Current Value (CHF)</h3>
-            <p className="text-2xl font-bold text-brand-gold mt-2">6,253.75</p>
-          </div>
-        </div>
-        {/* We can add a transaction history table below this grid later */}
+          <TabsContent value="transactions" className="mt-6">
+            <TransactionTable transactions={data.transactions} />
+          </TabsContent>
+        </Tabs>
+
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

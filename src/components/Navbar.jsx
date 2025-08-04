@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // For cleaner code, we can manage links in an array
 const navLinks = [
@@ -37,9 +38,12 @@ const Navbar = () => {
           <a href="#login" className="text-gray-300 hover:bg-white/10 hover:text-white px-3 py-2 rounded-md text-base font-medium transition-colors">
             Login
           </a>
-          <button className="bg-[#ff6f3c] hover:bg-[#f05e2a] text-white font-medium py-2 px-5 rounded-full transition-colors">
-            Start Trade
-          </button>
+              <Link
+  to="/dashboard"
+  className="w-full text-left bg-[#ff6f3c] hover:bg-[#f05e2a] text-white font-medium my-2 py-2 px-3 rounded-md transition-colors block"
+>
+  Start Trade
+</Link>
         </div>
 
         {/* Mobile Menu Button - Hidden on desktop */}
@@ -73,9 +77,13 @@ const Navbar = () => {
            <a href="#login" className="text-gray-300 hover:bg-white/10 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
             Login
           </a>
-          <button className="w-full text-left bg-[#ff6f3c] hover:bg-[#f05e2a] text-white font-medium my-2 py-2 px-3 rounded-md transition-colors">
-            Start Trade
-          </button>
+         <Link
+  to="/dashboard"
+  className="w-full text-left bg-[#ff6f3c] hover:bg-[#f05e2a] text-white font-medium my-2 py-2 px-3 rounded-md transition-colors block"
+>
+  Start Trade
+</Link>
+
         </div>
       </div>
     </nav>
